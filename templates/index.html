@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color"
+        content="#0f172a">
+
+    <title>
+        Weather Forecast Pro V2.0
+    </title>
+
+    <!-- Google Font -->
+
+    <link rel="preconnect"
+        href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <!-- CSS -->
+
+    <link rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Leaflet -->
+
+    <link rel="stylesheet"
+        href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- Chart JS -->
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<div id="weather-bg"></div>
+
+<div class="background-overlay"></div>
+
+<div class="container">
+
+<!-- =========================
+     HERO
+========================= -->
+
+<div class="hero">
+
+<h1>
+
+<i class="fa-solid fa-cloud-sun"></i>
+
+Weather Forecast Pro
+
+</h1>
+
+
+
+
+
+<!-- =========================
+     TOP BAR
+========================= -->
+
+<div class="top-bar">
+
+<div id="live-clock">
+
+{{ current_time }}
+
+</div>
+
+<button
+
+id="theme-btn"
+
+onclick="toggleTheme()">
+
+🌙 Dark Mode
+
+</button>
+
+</div>
+
+<!-- =========================
+     SEARCH
+========================= -->
+
+<form method="POST">
+
+<div class="search-box">
+
+<i class="fa-solid fa-location-dot"></i>
+
+<input
+
+type="text"
+
+id="cityInput"
+
+name="city"
+
+placeholder="Search City..."
+
+required>
+
+<button type="submit">
+
+<i class="fa-solid fa-magnifying-glass"></i>
+
+Search
+
+</button>
+
+</div>
+
+</form>
+
+<!-- =========================
+     ACTION BUTTONS
+========================= -->
+
+<div class="action-buttons">
+
+<button
+
+class="voice-btn"
+
+onclick="startVoiceSearch()">
+
+🎤 Voice Search
+
+</button>
+
+<button
+
+class="location-btn"
+
+onclick="getLocation()">
+
+📍 My Location
+
+</button>
+
+<button
+
+class="refresh-btn"
+
+onclick="location.reload()">
+
+🔄 Refresh
+
+</button>
+
+</div>
+
+<!-- =========================
+     SEARCH HISTORY
+========================= -->
+
+<div class="history-card">
+
+<h3>
+
+🕓 Search History
+
+</h3>
+
+<ul id="history-list">
+
+</ul>
+
+</div>
+
+{% if alerts %}
+
+<div class="alerts-card">
+
+<h2>
+
+🔔 Weather Alerts
+
+</h2>
+
+{% for alert in alerts %}
+
+<div class="alert-item">
+
+{{ alert }}
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+{% if weather %}
+<!-- =========================
+     MAIN DASHBOARD
+========================= -->
+
+<div class="dashboard-grid">
+
+    <!-- WEATHER CARD -->
+
+    <div class="weather-card glass">
+
+        <div class="weather-header">
+
+            <div>
+
+                <h2>
+
+                    {{ weather.city }}, {{ weather.country }}
+
+                </h2>
+
+                <p>
+
+                    {{ weather.description }}
+
+                </p>
+
+            </div>
+
+            <img
+            src="https://openweathermap.org/img/wn/{{ weather.icon }}@4x.png">
+
+        </div>
+
+        <div class="temperature-section">
+
+            <h1>
+
+                {{ weather.temperature }}°C
+
+            </h1>
+
+            <span>
+
+                Feels Like {{ weather.feels_like }}°C
+
+            </span>
+
+        </div>
+
+        <div class="weather-stats">
+
+            <div class="stat-card">
+
+                <i class="fa-solid fa-droplet"></i>
+
+                <h4>
+
+                    Humidity
+
+                </h4>
+
+                <p>
+
+                    {{ weather.humidity }}%
+
+                </p>
+
+            </div>
+
+            <div class="stat-card">
+
+                <i class="fa-solid fa-wind"></i>
+
+                <h4>
+
+                    Wind
+
+                </h4>
+
+                <p>
+
+                    {{ weather.wind }} m/s
+
+                </p>
+
+            </div>
+
+            <div class="stat-card">
+
+                <i class="fa-solid fa-eye"></i>
+
+                <h4>
+
+                    Visibility
+
+                </h4>
+
+                <p>
+
+                    {{ weather.visibility }} km
+
+                </p>
+
+            </div>
+
+            <div class="stat-card">
+
+                <i class="fa-solid fa-gauge-high"></i>
+
+                <h4>
+
+                    Pressure
+
+                </h4>
+
+                <p>
+
+                    {{ weather.pressure }} hPa
+
+                </p>
+
+            </div>
+
+            <div class="stat-card">
+
+                <i class="fa-solid fa-sun"></i>
+
+                <h4>
+
+                    Sunrise
+
+                </h4>
+
+                <p>
+
+                    {{ weather.sunrise }}
+
+                </p>
+
+            </div>
+
+            <div class="stat-card">
+
+                <i class="fa-solid fa-moon"></i>
+
+                <h4>
+
+                    Sunset
+
+                </h4>
+
+                <p>
+
+                    {{ weather.sunset }}
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- AQI CARD -->
+
+    <div class="aqi-card glass">
+
+        <h2>
+
+            🌫 Air Quality Index
+
+        </h2>
+
+        <div class="aqi-circle">
+
+            {{ aqi_data.value }}
+
+        </div>
+
+        <h3>
+
+            {{ aqi_data.status }}
+
+        </h3>
+
+        <div class="aqi-details">
+
+            <div>
+
+                CO
+
+                <span>
+
+                    {{ aqi_data.co }}
+
+                </span>
+
+            </div>
+
+            <div>
+
+                NO₂
+
+                <span>
+
+                    {{ aqi_data.no2 }}
+
+                </span>
+
+            </div>
+
+            <div>
+
+                PM2.5
+
+                <span>
+
+                    {{ aqi_data.pm2_5 }}
+
+                </span>
+
+            </div>
+
+            <div>
+
+                PM10
+
+                <span>
+
+                    {{ aqi_data.pm10 }}
+
+                </span>
+
+            </div>
+
+            <div>
+
+                O₃
+
+                <span>
+
+                    {{ aqi_data.o3 }}
+
+                </span>
+
+            </div>
+
+            <div>
+
+                SO₂
+
+                <span>
+
+                    {{ aqi_data.so2 }}
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- =========================
+     AI DASHBOARD
+========================= -->
+
+<div class="ai-dashboard">
+
+    <!-- AI WEATHER ADVICE -->
+
+    <div class="ai-card glass">
+
+        <h2>
+
+            🤖 AI Weather Assistant
+
+        </h2>
+
+        <div class="ai-content">
+
+            <p>
+
+                {{ ai_advice }}
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- CLOTHING -->
+
+    <div class="clothing-card glass">
+
+        <h2>
+
+            👕
+
+            Today's Clothing
+
+        </h2>
+
+        <div class="cloth-content">
+
+            <h3>
+
+                {{ clothing }}
+
+            </h3>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     TODAY'S HIGHLIGHTS
+========================= -->
+
+<div class="highlights">
+
+    <div class="highlight-card">
+
+        <i class="fa-solid fa-temperature-high"></i>
+
+        <h4>
+
+            Feels Like
+
+        </h4>
+
+        <h2>
+
+            {{ weather.feels_like }}°C
+
+        </h2>
+
+    </div>
+
+    <div class="highlight-card">
+
+        <i class="fa-solid fa-droplet"></i>
+
+        <h4>
+
+            Humidity
+
+        </h4>
+
+        <h2>
+
+            {{ weather.humidity }}%
+
+        </h2>
+
+    </div>
+
+    <div class="highlight-card">
+
+        <i class="fa-solid fa-wind"></i>
+
+        <h4>
+
+            Wind
+
+        </h4>
+
+        <h2>
+
+            {{ weather.wind }} m/s
+
+        </h2>
+
+    </div>
+
+    <div class="highlight-card">
+
+        <i class="fa-solid fa-eye"></i>
+
+        <h4>
+
+            Visibility
+
+        </h4>
+
+        <h2>
+
+            {{ weather.visibility }} km
+
+        </h2>
+
+    </div>
+
+    <div class="highlight-card">
+
+        <i class="fa-solid fa-gauge-high"></i>
+
+        <h4>
+
+            Pressure
+
+        </h4>
+
+        <h2>
+
+            {{ weather.pressure }}
+
+        </h2>
+
+    </div>
+
+    <div class="highlight-card">
+
+        <i class="fa-solid fa-cloud"></i>
+
+        <h4>
+
+            Weather
+
+        </h4>
+
+        <h2>
+
+            {{ weather.description }}
+
+        </h2>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     WEATHER SUMMARY
+========================= -->
+
+<div class="summary-card glass">
+
+    <h2>
+
+        📋 Today's Weather Summary
+
+    </h2>
+
+    <p>
+
+        Current temperature in
+
+        <b>{{ weather.city }}</b>
+
+        is
+
+        <b>{{ weather.temperature }}°C</b>
+
+        with
+
+        <b>{{ weather.description }}</b>.
+
+        Humidity is
+
+        <b>{{ weather.humidity }}%</b>,
+
+        wind speed
+
+        <b>{{ weather.wind }} m/s</b>
+
+        and visibility
+
+        <b>{{ weather.visibility }} km</b>.
+
+    </p>
+
+</div>
+<!-- =========================
+     5 DAY FORECAST
+========================= -->
+
+<div class="forecast-section glass">
+
+    <div class="section-title">
+
+        <h2>
+
+            📅 5 Day Forecast
+
+        </h2>
+
+    </div>
+
+    <div class="forecast-container">
+
+        {% for day in forecast %}
+
+        <div class="forecast-card">
+
+            <h3>
+
+                {{ day.date }}
+
+            </h3>
+
+            <img
+            src="https://openweathermap.org/img/wn/{{ day.icon }}@2x.png">
+
+            <h2>
+
+                {{ day.temp }}°C
+
+            </h2>
+
+            <p>
+
+                💧 {{ day.humidity }}%
+
+            </p>
+
+            <p>
+
+                🌬 {{ day.wind }} m/s
+
+            </p>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     HOURLY FORECAST
+========================= -->
+
+<div class="hourly-section glass">
+
+    <div class="section-title">
+
+        <h2>
+
+            ⏰ Hourly Forecast
+
+        </h2>
+
+    </div>
+
+    <div class="hourly-container">
+
+        {% for hour in hourly_forecast %}
+
+        <div class="hour-card">
+
+            <h4>
+
+                {{ hour.time }}
+
+            </h4>
+
+            <img
+            src="https://openweathermap.org/img/wn/{{ hour.icon }}@2x.png">
+
+            <h2>
+
+                {{ hour.temp }}°C
+
+            </h2>
+
+            <p>
+
+                💧 {{ hour.humidity }}%
+
+            </p>
+
+            <p>
+
+                🌬 {{ hour.wind }} m/s
+
+            </p>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     RAIN PROBABILITY
+========================= -->
+
+<div class="rain-section glass">
+
+    <div class="section-title">
+
+        <h2>
+
+            🌧 Rain Probability
+
+        </h2>
+
+    </div>
+
+    <div class="rain-container">
+
+        {% for rain in rain_probability %}
+
+        <div class="rain-card">
+
+            <h4>
+
+                {{ rain.time }}
+
+            </h4>
+
+            <h2>
+
+                {{ rain.chance }}%
+
+            </h2>
+
+            <div class="progress">
+
+                <div
+                class="progress-fill"
+
+                style="width:{{ rain.chance }}%;">
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     TEMPERATURE CHART
+========================= -->
+
+<div class="chart-card glass">
+
+    <h2>
+
+        📈 Temperature Trend
+
+    </h2>
+
+    <canvas id="tempChart"></canvas>
+
+</div>
+
+
+<script>
+
+const forecastTemps=[
+
+{% for day in forecast %}
+
+{{ day.temp }},
+
+{% endfor %}
+
+];
+
+const forecastDates=[
+
+{% for day in forecast %}
+
+"{{ day.date }}",
+
+{% endfor %}
+
+];
+
+</script>
+<!-- =========================
+     INTERACTIVE MAP
+========================= -->
+
+<div class="map-card glass">
+
+    <h2>
+
+        🌍 Interactive Weather Map
+
+    </h2>
+
+    <div id="map"></div>
+
+</div>
+
+
+<!-- =========================
+     WEATHER RADAR
+========================= -->
+
+<div class="radar-card glass">
+
+    <h2>
+
+        🌦 Live Weather Radar
+
+    </h2>
+
+    <div class="radar-container">
+
+        <iframe
+
+        width="100%"
+
+        height="500"
+
+        src="https://embed.windy.com/embed2.html?lat={{ weather.lat }}&lon={{ weather.lon }}&detailLat={{ weather.lat }}&detailLon={{ weather.lon }}&zoom=8&level=surface&overlay=radar&product=radar"
+
+        frameborder="0">
+
+        </iframe>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     FAVORITE CITIES
+========================= -->
+
+<div class="favorite-card glass">
+
+    <h2>
+
+        ⭐ Favorite Cities
+
+    </h2>
+
+    <div class="favorite-buttons">
+
+        <button onclick="quickSearch('Delhi')">
+
+            Delhi
+
+        </button>
+
+        <button onclick="quickSearch('Mumbai')">
+
+            Mumbai
+
+        </button>
+
+        <button onclick="quickSearch('Bengaluru')">
+
+            Bengaluru
+
+        </button>
+
+        <button onclick="quickSearch('Lucknow')">
+
+            Lucknow
+
+        </button>
+
+        <button onclick="quickSearch('Budhana')">
+
+            Budhana
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     DOWNLOAD REPORT
+========================= -->
+
+<div class="pdf-section">
+
+    <button
+
+    class="pdf-btn"
+
+    onclick="window.print()">
+
+        📄 Download Weather Report
+
+    </button>
+
+</div>
+
+
+<!-- =========================
+     MAP COORDINATES
+========================= -->
+
+<script>
+
+const latitude={{ weather.lat }};
+
+const longitude={{ weather.lon }};
+
+</script>
+
+{% endif %}
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+    <div class="footer-content">
+
+
+        <p>
+
+            Developed by <b>Arnav Mittal</b> 🚀
+
+        </p>
+
+
+    </div>
+
+</footer>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+
+</html>
