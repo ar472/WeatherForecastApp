@@ -49,20 +49,14 @@ BACKGROUND
 
 }
 
-.background-overlay{
-
-    position:fixed;
-
-    width:100%;
-
-    height:100%;
-
-    background:rgba(0,0,0,.25);
-
-    backdrop-filter:blur(5px);
-
-    z-index:-2;
-
+.background-overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.25);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    z-index: -2;
 }
 
 /* ===============================
